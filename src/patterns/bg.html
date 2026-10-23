@@ -1,0 +1,77 @@
+<!--
+  src/patterns/bg.html — 영상 공통 배경 (docs/video.md 2장)
+  쓰는 법: out/<영상이름>/compositions/patterns/bg.html 로 복사하고 수정하지 않는다.
+  장면마다 같은 시작 · 길이로 호스트를 하나 두고, 장면 호스트보다 아래(z-index)에 놓는다.
+    <div id="s1-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+         data-start="0" data-duration="1.966667" data-width="1920" data-height="1080"
+         data-variable-values='{"lightX":0,"lightY":40,"seconds":1.966667}' style="z-index:0"></div>
+  변수: lightX · lightY = video-light-pos 번호의 x · y(%), seconds = 장면 길이(초, video-light-drift 계산용),
+        tone = "dark"(기본, video-bg) · "light"(video-bg-light · video-dots-light · video-light-light, docs/video.md 2장)
+  필요한 에셋: assets/noise.png
+-->
+<template>
+  <style>
+    /* 토큰 (docs/video.md 2장) */
+    #root {
+      --video-bg: #18191b;                       /* video-bg = color-text */
+      --video-dots-color: #ffffff;               /* video-dots 색 = color-bg */
+      --video-dots-size: 24px;                   /* video-dots 간격 */
+      --video-dots-opacity: 0.06;                /* video-dots 불투명도 */
+      --video-light-color: rgba(55, 89, 222, 0.22); /* video-light = color-primary 22% */
+      --video-noise-opacity: 0.04;               /* video-noise */
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--video-bg);
+    }
+    #root .bg-dots {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, var(--video-dots-color) 1px, rgba(255, 255, 255, 0) 1.5px);
+      background-size: var(--video-dots-size) var(--video-dots-size);
+      background-position: 12px 12px;
+      opacity: var(--video-dots-opacity);
+    }
+    /* video-light: 타원 화면 폭 70% × 높이 140%. 중심은 변수 lightX · lightY */
+    #root .bg-light {
+      position: absolute;
+      width: 1344px;
+      height: 1512px;
+      background: radial-gradient(ellipse 50% 50% at 50% 50%, var(--video-light-color), rgba(55, 89, 222, 0));
+      mix-blend-mode: screen;
+    }
+    #root .bg-noise {
+      position: absolute;
+      inset: 0;
+      background-image: url("assets/noise.png");
+      opacity: var(--video-noise-opacity);
+    }
+  </style>
+  <div id="root" data-composition-id="bg" data-width="1920" data-height="1080"
+       data-composition-variables='[{"id":"lightX","type":"number","label":"빛 x (%)","default":0},{"id":"lightY","type":"number","label":"빛 y (%)","default":40},{"id":"seconds","type":"number","label":"장면 길이 (초)","default":2},{"id":"tone","type":"string","label":"배경 (dark · light)","default":"dark"}]'>
+    <div class="bg-dots"></div>
+    <div id="bg-light" class="bg-light" data-layout-allow-overflow></div>
+    <div class="bg-noise"></div>
+  </div>
+  <script>
+    (function () {
+      const v = window.__hyperframes.getVariables();
+      if (v.tone === "light") {
+        // 밝은 배경 (docs/video.md 2장): video-bg-light · video-dots-light 4% · video-light-light 8%
+        const root = document.getElementById("bg-light").parentNode;   // 이 조각의 #root
+        root.style.setProperty("--video-bg", "#f7f7f8");
+        root.style.setProperty("--video-dots-color", "#18191b");
+        root.style.setProperty("--video-dots-opacity", "0.04");
+        root.style.setProperty("--video-light-color", "rgba(55, 89, 222, 0.08)");
+      }
+      const light = document.getElementById("bg-light");
+      // 중심을 (lightX%, lightY%)에 둠
+      light.style.left = (1920 * v.lightX / 100 - 672) + "px";
+      light.style.top = (1080 * v.lightY / 100 - 756) + "px";
+      const tl = gsap.timeline({ paused: true });
+      // video-light-drift (docs/motion.md 4-5): 초당 화면 폭의 3%, easing 없이 일정한 속도
+      tl.fromTo(light, { x: 0 }, { x: 1920 * 0.03 * v.seconds, duration: v.seconds, ease: "none" }, 0);
+      window.__timelines["bg"] = tl;
+    })();
+  </script>
+</template>

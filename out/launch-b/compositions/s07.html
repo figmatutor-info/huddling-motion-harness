@@ -1,0 +1,62 @@
+<!--
+  장면 7 · 376–450f · 엔드 바탕 + 로고 빛 번짐 (scenes.md #7). 층: bg.html 위 · end-card.html 아래
+  엔드 바탕 바꾸기 (end-shift.html, 구현 없음 → 장면에서 만듦)
+    video-end-gradient (docs/video.md 2장): 아래 color-primary #3759de → 위 video-bg #18191b
+    장면 안 50–63f transition (dur-m 13f · standard): 그라데이션 층이 아래에서 위로 덮음 (층은 늘이지 않고 가림만 걷음), 그 뒤 끝까지 머묾
+  로고 빛 맞음 빛 번짐 (logo-hit.html, 구현 없음 → 장면에서 만듦. 링은 위 층 compositions/s07-ring.html)
+    video-logo-glow: video-light #3759de 22%, 크기 아이콘 높이 3배, 한 번 번졌다 사라짐 — 장면 안 44–62f emphasis 18f 곡선 하나 (불투명도 0 → 1 → 0)
+    아이콘: end-card.html 로고 아이콘(#ec-icon) 렌더 실측 x 630.59–694.64 · y 605.85–672.07 → 높이 66.21, 가운데 (662.62, 638.96)
+    → 빛 지름 66.21 × 3 = 198.64
+-->
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #s7-end-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, #3759de, #18191b); /* video-end-gradient: color-primary → video-bg */
+    }
+    #s7-glow {
+      position: absolute; left: 662.62px; top: 638.96px; width: 198.64px; height: 198.64px; /* 아이콘 높이 66.21 × 3, 가운데 = 아이콘 가운데 */
+      border-radius: 50%; opacity: 0;
+      background: radial-gradient(circle closest-side, rgba(55, 89, 222, 0.22), rgba(55, 89, 222, 0)); /* video-logo-glow: video-light #3759de 22% */
+    }
+  </style>
+  <div id="root" data-composition-id="s07" data-width="1920" data-height="1080">
+    <div id="s7-end-gradient"></div>
+    <div id="s7-glow" data-layout-allow-overlap></div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      const entrance = bezier(0.15, 0.85, 0.55, 0.95);   // entrance (emphasis 곡선)
+      const standard = bezier(0.55, 0, 0.1, 0.95);       // standard (transition 곡선)
+      const EMPHASIS = 18 * F;                           // emphasis = dur-l 18f
+      const TRANSITION = 13 * F;                         // transition = dur-m 13f
+
+      const tl = gsap.timeline({ paused: true });
+      // 로고 빛 번짐 44–62f: 진행값 하나로 불투명도 sin(π × 진행) (0 → 1 → 0)
+      const glow = document.getElementById("s7-glow");
+      gsap.set(glow, { xPercent: -50, yPercent: -50 });
+      const g = { p: 0 };
+      tl.fromTo(g, { p: 0 }, { p: 1, duration: EMPHASIS, ease: entrance, onUpdate: function () {
+        glow.style.opacity = Math.sin(Math.PI * g.p).toFixed(4);
+      } }, 44 * F);
+      // 엔드 바탕 바꾸기 50–63f: 아래부터 차오름 (위쪽 가림 100% → 0%)
+      tl.fromTo("#s7-end-gradient", { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: TRANSITION, ease: standard }, 50 * F);
+      window.__timelines["s07"] = tl;
+    })();
+  </script>
+</template>

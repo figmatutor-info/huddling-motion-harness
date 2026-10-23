@@ -1,0 +1,90 @@
+<!--
+  장면 4 · 193–251f · 제출하기 버튼 (scenes.md #4)
+  부품: src/parts/button-submit.html (data-state="submit" "제출하기") 마크업 · 스타일 그대로, × 2.4 = 840 × 105.6
+  위치: 가운데 (1340, 540) → left 920 · top 487.2 (scenes.md 장면에서 정한 값)
+  움직임 (장면 안 프레임)
+    0–13f   버튼 등장: 아래 16px → 0 + 투명 → 불투명, enter (dur-m 13f · entrance)
+    19–37f  버튼 눌림 (button-press.html, 구현 없음 → 장면에서 만듦): emphasis 18f 곡선 하나로 크기 1 → 0.96 → 1 (돌아올 때 1을 넘지 않음)
+    19–37f  눌림 링 (press-ring.html, 구현 없음 → 장면에서 만듦): video-logo-ring — video-accent #91a4ed, 선 2px,
+            지름 105.6 → 316.8 (버튼 높이 → 3배, width · height로, transform scale 금지), 불투명도 60% → 0%, 중심 (1340, 540), emphasis 18f 한 번
+  밀고 들어가기 · 점 수렴은 index.html 메인 타임라인 (카메라 · 전환)
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    #root {
+      --color-primary: #3759de;     /* color-primary */
+      --color-on-primary: #ffffff;  /* color-on-primary */
+      position: absolute; inset: 0;
+    }
+    /* 등장 · 눌림 감싸개: 화면 전체, 눌림 기준 = 버튼 가운데 (1340, 540) */
+    #s4-btn-enter, #s4-btn-press { position: absolute; inset: 0; }
+    /* 배율 감싸개: 부품 350×44 × 2.4 */
+    #s4-button-scale { position: absolute; left: 920px; top: 487.2px; width: 350px; height: 44px; transform: scale(2.4); transform-origin: 0 0; }
+    /* 아래는 src/parts/button-submit.html 스타일 그대로 */
+    #button-submit {
+      box-sizing: border-box; width: 350px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      overflow: hidden; border-radius: 8px; background: var(--color-primary);
+    }
+    #button-submit .label {
+      flex: 1 0 0; min-width: 1px; margin: 0; font-family: "Pretendard", sans-serif; font-weight: 600;
+      font-size: 14px; line-height: 20px; color: var(--color-on-primary); text-align: center;
+    }
+    #button-submit .label > span { display: none; }
+    #button-submit[data-state="submit"] [data-for="submit"] { display: inline; }
+    /* 눌림 링: video-logo-ring (docs/video.md 5장) — video-accent, 선 2px. 가운데 맞춤은 스크립트 (xPercent · yPercent −50) */
+    #s4-ring {
+      position: absolute; left: 1340px; top: 540px; width: 105.6px; height: 105.6px;
+      box-sizing: border-box; border: 2px solid #91a4ed; /* video-accent */ border-radius: 50%; opacity: 0;
+    }
+  </style>
+  <div id="root" data-composition-id="s04" data-width="1920" data-height="1080">
+    <div id="s4-btn-enter">
+      <div id="s4-btn-press">
+        <div id="s4-button-scale">
+          <div id="button-submit" data-state="submit">
+            <p class="label"><span data-for="submit">제출하기</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="s4-ring" data-layout-allow-overlap></div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      const entrance = bezier(0.15, 0.85, 0.55, 0.95);   // entrance (enter · emphasis 곡선)
+      const ENTER = 13 * F;                              // enter = dur-m 13f
+      const EMPHASIS = 18 * F;                           // emphasis = dur-l 18f
+      const PRESS_AT = 19 * F;                           // 눌림 시점 장면 안 19f (scenes.md)
+
+      const tl = gsap.timeline({ paused: true });
+      // 버튼 등장 0–13f: 아래 16px → 0 + 투명 → 불투명 (enter)
+      tl.fromTo("#s4-btn-enter", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: ENTER, ease: entrance }, 0);
+      // 버튼 눌림 19–37f: emphasis 곡선 하나(진행값 하나)로 1 → 0.96 → 1. 크기 = 1 − 0.04 × sin(π × 진행), 1을 넘지 않음
+      const press = document.getElementById("s4-btn-press");
+      gsap.set(press, { transformOrigin: "1340px 540px" });
+      const pr = { p: 0 };
+      tl.fromTo(pr, { p: 0 }, { p: 1, duration: EMPHASIS, ease: entrance, onUpdate: function () {
+        gsap.set(press, { scale: 1 - 0.04 * Math.sin(Math.PI * pr.p) });
+      } }, PRESS_AT);
+      // 눌림 링 19–37f: 지름 105.6 → 316.8 (width · height), 불투명도 0.6 → 0, emphasis 한 번
+      gsap.set("#s4-ring", { xPercent: -50, yPercent: -50 });
+      tl.fromTo("#s4-ring", { width: 105.6, height: 105.6, opacity: 0.6 }, { width: 316.8, height: 316.8, opacity: 0, duration: EMPHASIS, ease: entrance, immediateRender: false }, PRESS_AT);
+      window.__timelines["s04"] = tl;
+    })();
+  </script>
+</template>

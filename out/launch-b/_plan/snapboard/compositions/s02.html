@@ -1,0 +1,127 @@
+<!--
+  장면 2 · 77–135f · 자산 카드 레일 (정지: 대표 프레임 = 튕김 1번이 끝나 레일이 멈춘 상태, 장면 안 57f)
+  부품: src/parts/asset-card.html (assets/parts/asset-card.html 로 복사, 원본 그대로) 마크업 · 스타일 그대로, data-state만 다름 (상태별 마크업 · 보이기 규칙까지 그대로).
+    한 장면에 카드 4장이라 id 중복을 피하려고 선택자 #asset-card → .asset-card 로만 바꿈 (값은 그대로)
+  크기: 원본 350×74, 가로세로 같은 배율만 (scenes.md 장면에서 정한 값)
+    가운데 칸 ×2.0 = 700×148 · 옆 칸 ×1.4 = 490×103.6
+  레일 칸 (카드 가운데 x, 칸 간격 619): 화면 밖 왼쪽 −278 · 왼쪽 341 · 가운데 960 · 오른쪽 1579 · 화면 밖 오른쪽 2198
+    끝 상태 = 화면 밖 왼쪽 ① private-image · 왼쪽 ② review · 가운데 ③ selling · 오른쪽 ④ private-file
+  세로: 카드 가운데 y 615 (가운데 카드 top 541 · 옆 카드 top 563.2). 레일 기울기 0° (평면)
+  보이는 묶음: 490 + 24 + 700 + 24 + 490 = 1728 = 화면 폭 90% (left 96 – 1824)
+  그림자: video-shadow-ui-soft (0 8px 24px 검정 12% + 0 1px 3px 검정 8%, docs/video.md 5장, 수정 요청 4 ①) — 배율 감싸개에 걸어서 ÷ 배율로 적음 → 화면 결과 = 토큰 값
+  생성 단계: card-stack.html B 카드 레일 (튕김 1번 장면 안 0–58f, dur-2xl · flick, 레일 한 칸 619px 왼쪽, 배율은 레일 위치에 묶여 같은 곡선)
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 400; src: url("assets/fonts/Pretendard-Regular.otf") format("opentype"); }
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    #root {
+      /* 토큰 (docs/design.md 1장) — asset-card.html 그대로 */
+      --color-bg: #ffffff;             /* color-bg */
+      --color-surface: #f7f7f8;        /* color-surface */
+      --color-text: #18191b;           /* color-text */
+      --color-text-muted: #75777c;     /* color-text-muted */
+      --color-primary: #3759de;        /* color-primary */
+      --color-character-bg: #e3f2fd;   /* color-character-bg */
+      position: absolute; inset: 0;
+    }
+    /* 배율 감싸개: 부품 350×74, transform-origin 왼쪽 위 */
+    #root .s2-slot { position: absolute; width: 350px; height: 74px; transform-origin: 0 0; border-radius: 8px; }
+    /* 가운데 칸 ×2.0: 가운데 x 960 → left 960 − 350 = 610, top 541 */
+    #root .s2-center { transform: scale(2); top: 541px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 0.5px 1.5px rgba(0, 0, 0, 0.08); /* video-shadow-ui-soft ÷ 2.0 → 화면 0 8px 24px · 0 1px 3px */ }
+    /* 옆 칸 ×1.4: 반폭 245, top 563.2 */
+    #root .s2-side { transform: scale(1.4); top: 563.2px;
+      box-shadow: 0 5.714px 17.143px rgba(0, 0, 0, 0.12), 0 0.714px 2.143px rgba(0, 0, 0, 0.08); /* video-shadow-ui-soft ÷ 1.4 → 화면 0 8px 24px · 0 1px 3px */ }
+    #s2-slot1 { left: -523px; }   /* 화면 밖 왼쪽 칸: −278 − 245 */
+    #s2-slot2 { left: 96px; }     /* 왼쪽 칸: 341 − 245 */
+    #s2-slot3 { left: 610px; }    /* 가운데 칸: 960 − 350 */
+    #s2-slot4 { left: 1334px; }   /* 오른쪽 칸: 1579 − 245 */
+
+    /* 아래는 src/parts/asset-card.html 스타일 그대로 (#asset-card → .asset-card) */
+    #root .asset-card {
+      box-sizing: border-box;
+      width: 350px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--color-surface);
+      font-family: "Pretendard", sans-serif;
+    }
+    #root .asset-card[data-state="selling"],
+    #root .asset-card[data-state="private-file"] { align-items: center; }
+    #root .asset-card p { margin: 0; }
+    #root .asset-card .icon { box-sizing: border-box; flex: none; width: 40px; overflow: hidden; border-radius: 6px; }
+    #root .asset-card .icon-image { height: 32px; background: var(--color-character-bg); }
+    #root .asset-card .icon-image img { display: block; width: 40px; height: 32px; object-fit: contain; }
+    #root .asset-card .icon-file { padding: 8px; background: var(--color-bg); }
+    #root .asset-card .icon-file p { width: 24px; font-weight: 600; font-size: 11px; line-height: 16px; color: var(--color-primary); }
+    #root .asset-card .copy { width: 266px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+    #root .asset-card .title { font-weight: 600; font-size: 15px; line-height: 22px; color: var(--color-text); }
+    #root .asset-card .meta { font-weight: 400; font-size: 12px; line-height: 16px; color: var(--color-text-muted); }
+    /* 상태별로 하나만 보인다 */
+    #root .asset-card [data-for] { display: none; }
+    #root .asset-card[data-state="private-image"] [data-for~="private-image"],
+    #root .asset-card[data-state="review"] [data-for~="review"],
+    #root .asset-card[data-state="selling"] [data-for~="selling"],
+    #root .asset-card[data-state="private-file"] [data-for~="private-file"] { display: block; }
+    #root .asset-card .copy[data-for] { display: none; }
+    #root .asset-card[data-state="private-image"] .copy[data-for~="private-image"],
+    #root .asset-card[data-state="review"] .copy[data-for~="review"],
+    #root .asset-card[data-state="selling"] .copy[data-for~="selling"],
+    #root .asset-card[data-state="private-file"] .copy[data-for~="private-file"] { display: flex; }
+  </style>
+  <div id="root" data-composition-id="s02" data-width="1920" data-height="1080" data-no-timeline data-layout-allow-overflow>
+    <!-- ① private-image · 화면 밖 왼쪽 칸 ×1.4 -->
+    <div id="s2-slot1" class="s2-slot s2-side">
+      <div id="s2-card1" class="asset-card" data-state="private-image">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+    <!-- ② review · 왼쪽 칸 ×1.4 -->
+    <div id="s2-slot2" class="s2-slot s2-side">
+      <div id="s2-card2" class="asset-card" data-state="review">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+    <!-- ③ selling · 가운데 칸 ×2.0 -->
+    <div id="s2-slot3" class="s2-slot s2-center">
+      <div id="s2-card3" class="asset-card" data-state="selling">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+    <!-- ④ private-file · 오른쪽 칸 ×1.4 -->
+    <div id="s2-slot4" class="s2-slot s2-side">
+      <div id="s2-card4" class="asset-card" data-state="private-file">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+  </div>
+</template>

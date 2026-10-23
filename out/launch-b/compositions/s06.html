@@ -1,0 +1,69 @@
+<!--
+  장면 6 · 310–376f · 숫자 줄 ₩29,700 (주인공 하나) (scenes.md #6)
+  화면 · 폰 프레임 · stat-card 넣지 않음 (수정 요청 2 ③). 문구 · 최종값 출처: src/parts/stat-card.html heading "이번 달 수익 ₩29,700" (data-final="29,700")
+  숫자 줄: video-hero 200px · Pretendard 600 · color-text #18191b · 행간 34/28 (줄 높이 243) · 자간 0 · top 482 (scenes.md 장면에서 정한 값)
+    숫자 상자(₩ + data-final 폭)가 가로 가운데 x 960, 상자 안 왼쪽 정렬
+  count-up.html 규칙 (구현 없음 → 장면에서 만듦): span textContent만 바꿈 · ₩는 span 밖 · tabular-nums · data-final + 높이 0 ::before로 최종값 폭 고정 · 왼쪽 정렬
+  라벨 "이번 달 수익"은 index.html의 headline.html 호스트 (top 356, light)
+  움직임 (장면 안 프레임)
+    0–13f   숫자 줄 등장: 아래 40px → 0 + 투명 → 불투명, enter (dur-m 13f · entrance), 처음 값 "₩0", 흐림 없음
+    13–31f  카운트업 0 → 29,700, emphasis (dur-l 18f · entrance), 매 프레임 정수 반올림 · 천 단위 쉼표
+    31–53f  숫자 머무름 (22f ≥ dur-m)
+  점 수렴 53–66f는 index.html 메인 타임라인 (전환)
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    #root { position: absolute; inset: 0; }
+    /* 숫자 줄: 화면 폭 전체 줄 안에서 숫자 상자를 가운데 */
+    #s6-number-line {
+      position: absolute; left: 0; top: 482px; width: 1920px; margin: 0;
+      text-align: center; white-space: nowrap;
+      font-family: "Pretendard", sans-serif; font-weight: 600;   /* Pretendard 600 */
+      font-size: 200px;                                         /* video-hero */
+      line-height: 243px;                                       /* 행간 Text/display 34/28 (200 × 34/28) */
+      letter-spacing: 0;
+      color: #18191b;                                           /* color-text (밝은 배경 글자) */
+    }
+    #s6-number-box { display: inline-block; text-align: left; }
+    /* count-up.html 규칙 */
+    #s6-amount { display: inline-block; font-variant-numeric: tabular-nums; text-align: left; }
+    #s6-amount::before { content: attr(data-final); display: block; height: 0; overflow: hidden; visibility: hidden; }
+  </style>
+  <div id="root" data-composition-id="s06" data-width="1920" data-height="1080">
+    <p id="s6-number-line"><span id="s6-number-box">₩<span id="s6-amount" data-final="29,700">0</span></span></p>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      const entrance = bezier(0.15, 0.85, 0.55, 0.95);   // entrance (enter · emphasis 곡선)
+      const ENTER = 13 * F;                              // enter = dur-m 13f
+      const EMPHASIS = 18 * F;                           // emphasis = dur-l 18f
+      const FINAL = 29700;                               // stat-card.html data-final "29,700"
+
+      const amount = document.getElementById("s6-amount");
+      const count = { v: 0 };
+      function write() { amount.textContent = Math.round(count.v).toLocaleString("en-US"); }  // 정수 반올림 · 천 단위 쉼표, textContent만
+      const tl = gsap.timeline({ paused: true });
+      // 0–13f 숫자 줄 등장 (아래 40px → 0, 투명 → 불투명), 처음 값 ₩0
+      tl.fromTo("#s6-number-line", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: ENTER, ease: entrance }, 0);
+      // 13–31f 카운트업 0 → 29,700 (emphasis)
+      tl.fromTo(count, { v: 0 }, { v: FINAL, duration: EMPHASIS, ease: entrance, onUpdate: write }, 13 * F);
+      write();
+      window.__timelines["s06"] = tl;
+    })();
+  </script>
+</template>

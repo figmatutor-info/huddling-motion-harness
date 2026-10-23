@@ -1,0 +1,61 @@
+<!--
+  src/patterns/phone-frame.html — 폰 프레임 (docs/video.md 4장 · 5장)
+  쓰는 법: out/<영상이름>/compositions/patterns/phone-frame.html 로 복사하고 수정하지 않는다. 배경보다 위, 장면 오버레이보다 아래에 놓는다.
+    <div id="s4-phone" data-composition-id="phone-frame" data-composition-src="compositions/patterns/phone-frame.html"
+         data-start="5.866667" data-duration="1.933333" data-width="1920" data-height="1080"
+         data-variable-values='{"screen":"assets/screens/02-skills.png"}' style="z-index:2"></div>
+  변수: screen = src/screens/*.png (780×1688)
+  장면 오버레이 좌표 (안쪽이 바뀌는 parts를 화면 위에 얹을 때 이 값으로 같은 자리에 맞춘다):
+    프레임  left 733.6px · top 65px · 452.8 × 950px (video-phone-height 88%)
+    베젤    12.8px (video-phone-bezel-width: 폰 화면 폭의 3%)
+    화면    left 746.4px · top 77.8px · 427.1 × 924.4px, 모서리 51.3px (video-phone-radius 12%)
+    배율    화면 png(780×1688)를 transform: scale(0.54763), transform-origin 0 0 으로 놓는다
+  호스트 주의: 타임라인이 없는 정지 조각이라 호스트에 data-no-timeline을 붙인다 (없으면 렌더가 45초 기다림, launch-a)
+-->
+<template>
+  <style>
+    /* 토큰 (docs/video.md 4장 · 5장) */
+    #root {
+      --video-phone-bezel: #2f3032;  /* video-phone-bezel */
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #root .phone {
+      position: absolute;
+      left: 733.6px;
+      top: 65px;
+      width: 452.8px;
+      height: 950px;
+      padding: 12.8px;
+      border-radius: 64.1px;
+      background: var(--video-phone-bezel);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3); /* video-shadow-ui */
+    }
+    #root .phone-screen {
+      position: relative;
+      width: 427.1px;
+      height: 924.4px;
+      border-radius: 51.3px;
+      overflow: hidden;
+      background: #ffffff; /* color-bg */
+    }
+    /* 화면 png(780×1688)를 폰 화면 폭에 맞춤 */
+    #root .phone-stage {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 780px;
+      height: 1688px;
+      transform: scale(0.54763);
+      transform-origin: 0 0;
+    }
+    #root .phone-stage img { position: absolute; left: 0; top: 0; width: 780px; height: 1688px; }
+  </style>
+  <div id="root" data-composition-id="phone-frame" data-width="1920" data-height="1080" data-no-timeline
+       data-composition-variables='[{"id":"screen","type":"string","label":"앱 화면","default":"assets/screens/03-mission.png"}]'>
+    <div class="phone">
+      <div class="phone-screen"><div class="phone-stage"><img id="pf-screen" data-var-src="screen" src="assets/screens/03-mission.png" alt="앱 화면" /></div></div>
+    </div>
+  </div>
+</template>

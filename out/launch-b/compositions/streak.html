@@ -1,0 +1,43 @@
+<!--
+  빛 줄기 전환 (light-streak.html, 구현 없음 → 장면에서 만듦). 호스트 길이 = transition 13f
+  video-streak (docs/video.md 2장): video-light #3759de, 가운데 불투명도 40% → 가장자리 0%, 폭 화면 폭 25% (480px), 기울기 30°, 왼쪽 → 오른쪽, screen 합성 (호스트에 mix-blend-mode)
+  순서 (transition = dur-m 13f · standard): 0f 줄기 출발 (앞 장면 exit 시작) · 6f 컷 · 13f 줄기 끝 (화면 밖)
+  기울기 30°는 skewX(−30°)로 (세로 변이 30° 기울어짐, 가로 폭 480 그대로). 회전 아님
+  이동: 줄기가 화면 밖 왼쪽 → 화면 밖 오른쪽. 높이 1080 · 기울기로 가로 퍼짐 ± 1080 × tan30° ÷ 2 = ± 311.8
+    x −800 (오른쪽 끝 −800 + 480 + 311.8 < 0) → x 2240 (왼쪽 끝 2240 − 311.8 > 1920). 흐림 없음 (전환)
+-->
+<template>
+  <style>
+    #root { position: absolute; inset: 0; overflow: hidden; }
+    #streak-band {
+      position: absolute; left: 0; top: 0; width: 480px; height: 1080px; /* 폭 화면 폭 25% */
+      background: linear-gradient(to right, rgba(55, 89, 222, 0), rgba(55, 89, 222, 0.4) 50%, rgba(55, 89, 222, 0)); /* video-streak: video-light 가운데 40% → 가장자리 0% */
+    }
+  </style>
+  <div id="root" data-composition-id="streak" data-width="1920" data-height="1080">
+    <div id="streak-band" data-layout-allow-overflow></div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      const standard = bezier(0.55, 0, 0.1, 0.95);       // standard (transition 곡선)
+      const TRANSITION = 13 * F;                         // transition = dur-m 13f
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#streak-band", { x: -800, skewX: -30 }, { x: 2240, skewX: -30, duration: TRANSITION, ease: standard }, 0);
+      window.__timelines["streak"] = tl;
+    })();
+  </script>
+</template>

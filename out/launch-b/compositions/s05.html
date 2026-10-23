@@ -1,0 +1,77 @@
+<!--
+  장면 5 · 251–310f · 승인 완료 배지 (보조) (scenes.md #5)
+  부품: src/parts/badge-approved.html 마크업 · 스타일 그대로, × 3 = 324 × 96 (글자 12px × 3 = 36px)
+  위치: left 798 · top 563 (헤드라인 아래 40), 가운데 (960, 611) = 점 수렴 수렴점 (scenes.md 장면에서 정한 값)
+  그림자: video-shadow-ui (0 16px 48px 검정 45% + 0 2px 6px 검정 30%, docs/video.md 5장) — 배율 3 안에 ÷ 3으로 적어 화면 결과 = 토큰 값
+  움직임 (badge-pulse.html, 구현 없음 → 장면에서 만듦. 장면 안 프레임)
+    0–13f   배지 enter (수렴점에서): 아래 16px → 0 + 투명 → 불투명, enter (dur-m 13f · entrance)
+    13–31f  emphasis 18f 곡선 하나로 크기 1 → 1.04 → 1, 한 번 (기준 = 배지 가운데)
+    53–59f  퇴장: 헤드라인과 같은 exit (dur-s 6f · exit 곡선)로 투명
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 400; src: url("assets/fonts/Pretendard-Regular.otf") format("opentype"); }
+    #root {
+      --color-primary-subtle: #edf1ff;  /* color-primary-subtle */
+      --color-success: #247a51;         /* color-success */
+      position: absolute; inset: 0;
+    }
+    #s5-badge-exit, #s5-badge-enter, #s5-badge-pulse { position: absolute; inset: 0; }
+    #s5-badge-scale {
+      position: absolute; left: 798px; top: 563px; width: 108px; height: 32px;
+      transform: scale(3); transform-origin: 0 0; border-radius: 8px;
+      box-shadow: 0 5.333px 16px rgba(0, 0, 0, 0.45), 0 0.667px 2px rgba(0, 0, 0, 0.3); /* video-shadow-ui (0 16px 48px · 0 2px 6px) ÷ 배율 3 */
+    }
+    /* 아래는 src/parts/badge-approved.html 스타일 그대로 */
+    #badge-approved { box-sizing: border-box; width: 108px; padding: 8px; overflow: hidden; border-radius: 8px; background: var(--color-primary-subtle); }
+    #badge-approved .label { width: 92px; margin: 0; font-family: "Pretendard", sans-serif; font-weight: 400; font-size: 12px; line-height: 16px; color: var(--color-success); }
+  </style>
+  <div id="root" data-composition-id="s05" data-width="1920" data-height="1080">
+    <div id="s5-badge-exit">
+      <div id="s5-badge-enter">
+        <div id="s5-badge-pulse">
+          <div id="s5-badge-scale">
+            <div id="badge-approved"><p class="label">승인 완료</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      const entrance = bezier(0.15, 0.85, 0.55, 0.95);   // entrance (enter · emphasis 곡선)
+      const exit = bezier(0.45, 0.05, 0.85, 0.15);       // exit
+      const ENTER = 13 * F;                              // enter = dur-m 13f
+      const EMPHASIS = 18 * F;                           // emphasis = dur-l 18f
+      const EXIT = 6 * F;                                // exit = dur-s 6f
+
+      const tl = gsap.timeline({ paused: true });
+      // 0–13f 배지 enter: 아래 16px → 0, 투명 → 불투명
+      tl.fromTo("#s5-badge-enter", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: ENTER, ease: entrance }, 0);
+      // 13–31f 크기 1 → 1.04 → 1: emphasis 곡선 하나(진행값 하나). 크기 = 1 + 0.04 × sin(π × 진행), 1.04를 넘지 않음
+      const pulse = document.getElementById("s5-badge-pulse");
+      gsap.set(pulse, { transformOrigin: "960px 611px" });
+      const pr = { p: 0 };
+      tl.fromTo(pr, { p: 0 }, { p: 1, duration: EMPHASIS, ease: entrance, onUpdate: function () {
+        gsap.set(pulse, { scale: 1 + 0.04 * Math.sin(Math.PI * pr.p) });
+      } }, 13 * F);
+      // 53–59f 퇴장: 같은 exit로 투명
+      tl.fromTo("#s5-badge-exit", { opacity: 1 }, { opacity: 0, duration: EXIT, ease: exit, immediateRender: false }, 53 * F);
+      window.__timelines["s05"] = tl;
+    })();
+  </script>
+</template>

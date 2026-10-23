@@ -1,0 +1,64 @@
+<!--
+  장면 1 · 0–77f · "AI" 칸 → 앱 아이콘 (정지: 대표 프레임 = 단어 겹쳐 바꾸기가 끝나 아이콘이 머무는 순간, 장면 안 50f — 머무름 38–71f 중)
+  같은 줄 감싸개(index.html #s1-line) 안에 headline.html 호스트("실무에 바로 적용하는")와 같이 놓는다 (scenes.md 질문 후보 18 · headline.html 호스트 주의)
+  칸 (scenes.md 장면에서 정한 값): top 489 · 높이 102 (줄 높이) · 폭 = 들어 있는 것의 폭 (끝 상태 = 아이콘 84) · 안은 왼쪽 정렬 · 칸 밖은 숨김
+    칸 왼쪽 끝 = "적용하는" 오른쪽 끝 + headline.html 단어 사이 간격
+    렌더 브라우저 실측 (Pretendard SemiBold 84px · video-tracking-tight −0.02em, headline.html과 같은 마스크 구조):
+      "실무에 바로 적용하는" 줄 폭 674.81 (x 622.59 – 1297.41, 가운데 960) · 단어 사이 간격 18.27 · "AI" 폭 76.63
+      → 칸 left = 1297.41 + 18.27 = 1315.67 (감싸개 이동 전)
+  아이콘: src/parts/brand-icon.html (assets/parts/brand-icon.html 로 복사, 원본 그대로) 마크업 · 스타일 그대로, 경로만 assets/
+    98×98 × 0.857143 (84 ÷ 98) = 84×84, transform scale 하나 (가로세로 같은 배율), transform-origin 왼쪽 위
+    세로 가운데 = 줄 가운데 y 540 → top 498 (칸 안 위 9). 그림자 없음 (글자 장면)
+  "AI": video-accent #91a4ed, 끝 상태 = 칸 밖 위 (translateY −102, blur-out 4px) → 이 프레임에는 안 보임
+  생성 단계: "AI" 상승 12–25f (enter · blur-in) · "AI" exit 25–31f (위로 102, blur-out) · 아이콘 enter 25–38f (아래 102 → 0, blur-in)
+    · 감싸개 자리 잡기 25–38f (enter) · 퇴장 71–77f (칸도 blur-out + 투명, exit)
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    #root {
+      /* 토큰 (docs/design.md 1장) — brand-icon.html 그대로 */
+      --color-illustration-000000: #000000;   /* color-illustration-000000 */
+      position: absolute; inset: 0;
+    }
+    /* "AI" 칸 (같은 마스크) */
+    #s1-slot {
+      position: absolute; left: 1315.67px; top: 489px;   /* 칸 left = "적용하는" 오른쪽 끝 1297.41 + 단어 사이 간격 18.27 · top 489 */
+      width: 84px; height: 102px;                        /* 폭 = 아이콘 84 (끝 상태) · 높이 = 줄 높이 102 */
+      overflow: hidden;
+    }
+    #s1-ai {
+      position: absolute; left: 0; top: 0; margin: 0; white-space: nowrap;
+      font-family: "Pretendard", sans-serif; font-weight: 600;
+      font-size: 84px;              /* video-headline */
+      line-height: 102px;           /* 행간 Text/display 34/28 */
+      letter-spacing: -0.02em;      /* video-tracking-tight */
+      color: #91a4ed;               /* video-accent */
+      transform: translateY(-102px); filter: blur(4px);   /* 끝 상태: exit 위로 102 + blur-out 4px */
+    }
+    /* 아이콘 배율 감싸개: 98×98 → 84×84, 칸 안 top 9 (화면 top 498) */
+    #s1-icon-scale { position: absolute; left: 0; top: 9px; width: 98px; height: 98px; transform-origin: 0 0; transform: scale(0.857143); }
+
+    /* 아래는 src/parts/brand-icon.html 스타일 그대로 (#brand-icon) */
+    #root #brand-icon {
+      box-sizing: border-box;
+      width: 98px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      border-radius: 12px;
+      background: var(--color-illustration-000000);
+    }
+    #root #brand-icon img { display: block; flex: none; width: 66px; height: 66px; }
+  </style>
+  <div id="root" data-composition-id="s01" data-width="1920" data-height="1080" data-no-timeline data-layout-allow-overflow>
+    <div id="s1-slot">
+      <p id="s1-ai">AI</p>
+      <div id="s1-icon-scale">
+        <div id="brand-icon">
+          <img src="assets/logo-symbol-white.svg" width="100" height="100" alt="Huddling Club">
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

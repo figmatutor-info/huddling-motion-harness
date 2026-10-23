@@ -1,0 +1,10 @@
+<!--
+  src/patterns/light-streak.html — 빛 줄기 전환
+  구현 없음 — 주석만. 4단계에서는 이 파일을 가져다 쓰지 않고, 이 주석의 값 · 순서대로 장면에서 만든다 (docs/motion.md 3장).
+  값: video-streak (docs/video.md 2장) — video-light #3759de, 가운데 40% → 가장자리 0%, 폭 화면 폭 25%(480px), 기울기 30°, 왼쪽 → 오른쪽, screen 합성
+  순서 (transition 13f)
+    0f   앞 장면 요소 exit 시작, 줄기 출발
+    6f   exit 끝 = 컷, 다음 장면 enter 시작 (4-7)
+    13f  줄기 끝 (평소에는 화면 밖)
+  주의: 이동 거리가 길면 standard 곡선 때문에 줄기가 4f 정도만 보인다 (launch-a critic 확인)
+-->

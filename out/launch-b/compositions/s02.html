@@ -1,0 +1,164 @@
+<!--
+  장면 2 · 77–135f · 자산 카드 레일 (card-stack.html B 카드 레일, 구현 없음 → 장면에서 만듦)
+  부품: src/parts/asset-card.html (assets/parts/asset-card.html 복사본, 원본 그대로) 마크업 · 스타일 그대로, data-state만 다름.
+    한 장면에 카드 4장이라 id 중복을 피하려고 선택자 #asset-card → .asset-card 로만 바꿈 (값은 그대로)
+  크기 (scenes.md 장면에서 정한 값): 원본 350×74, 가로세로 같은 배율만. 가운데 칸 ×2.0 = 700×148 · 옆 칸 ×1.4 = 490×103.6
+  레일 칸 (카드 가운데 x, 칸 간격 619): 화면 밖 왼쪽 −278 · 왼쪽 341 · 가운데 960 · 오른쪽 1579 · 화면 밖 오른쪽 2198. 카드 세로 가운데 y 615. 기울기 0°
+    장면 안 0f: 왼쪽 ① private-image · 가운데 ② review · 오른쪽 ③ selling · 화면 밖 오른쪽 ④ private-file
+    튕김 1번 0–58f (dur-2xl · flick): 레일 전체 왼쪽으로 619px → 끝: 화면 밖 왼쪽 ① · 왼쪽 ② · 가운데 ③ · 오른쪽 ④
+    카드 배율은 레일 위치에 묶여 같은 곡선(flick 진행값 하나)으로 바뀜. 제목(헤드라인)은 고정
+  그림자: video-shadow-ui-soft (0 8px 24px 검정 12% + 0 1px 3px 검정 8%, docs/video.md 5장) — 화면 결과가 토큰 값 그대로
+    (decisions.md "(스냅보드 승인)"): 배율 감싸개에 걸고 매 프레임 ÷ 그때 배율로 적음
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 400; src: url("assets/fonts/Pretendard-Regular.otf") format("opentype"); }
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    #root {
+      /* 토큰 (docs/design.md 1장) — asset-card.html 그대로 */
+      --color-bg: #ffffff;             /* color-bg */
+      --color-surface: #f7f7f8;        /* color-surface */
+      --color-text: #18191b;           /* color-text */
+      --color-text-muted: #75777c;     /* color-text-muted */
+      --color-primary: #3759de;        /* color-primary */
+      --color-character-bg: #e3f2fd;   /* color-character-bg */
+      position: absolute; inset: 0;
+    }
+    /* 배율 감싸개: 부품 350×74, 변형 기준 = 카드 가운데. 위치 · 배율 · 그림자는 스크립트가 매 프레임 씀 */
+    #root .s2-slot { position: absolute; left: 0; top: 578px; width: 350px; height: 74px; transform-origin: 175px 37px; border-radius: 8px; } /* top = 가운데 y 615 − 37 */
+
+    /* 아래는 src/parts/asset-card.html 스타일 그대로 (#asset-card → .asset-card) */
+    #root .asset-card {
+      box-sizing: border-box;
+      width: 350px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--color-surface);
+      font-family: "Pretendard", sans-serif;
+    }
+    #root .asset-card[data-state="selling"],
+    #root .asset-card[data-state="private-file"] { align-items: center; }
+    #root .asset-card p { margin: 0; }
+    #root .asset-card .icon { box-sizing: border-box; flex: none; width: 40px; overflow: hidden; border-radius: 6px; }
+    #root .asset-card .icon-image { height: 32px; background: var(--color-character-bg); }
+    #root .asset-card .icon-image img { display: block; width: 40px; height: 32px; object-fit: contain; }
+    #root .asset-card .icon-file { padding: 8px; background: var(--color-bg); }
+    #root .asset-card .icon-file p { width: 24px; font-weight: 600; font-size: 11px; line-height: 16px; color: var(--color-primary); }
+    #root .asset-card .copy { width: 266px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+    #root .asset-card .title { font-weight: 600; font-size: 15px; line-height: 22px; color: var(--color-text); }
+    #root .asset-card .meta { font-weight: 400; font-size: 12px; line-height: 16px; color: var(--color-text-muted); }
+    /* 상태별로 하나만 보인다 */
+    #root .asset-card [data-for] { display: none; }
+    #root .asset-card[data-state="private-image"] [data-for~="private-image"],
+    #root .asset-card[data-state="review"] [data-for~="review"],
+    #root .asset-card[data-state="selling"] [data-for~="selling"],
+    #root .asset-card[data-state="private-file"] [data-for~="private-file"] { display: block; }
+    #root .asset-card .copy[data-for] { display: none; }
+    #root .asset-card[data-state="private-image"] .copy[data-for~="private-image"],
+    #root .asset-card[data-state="review"] .copy[data-for~="review"],
+    #root .asset-card[data-state="selling"] .copy[data-for~="selling"],
+    #root .asset-card[data-state="private-file"] .copy[data-for~="private-file"] { display: flex; }
+  </style>
+  <div id="root" data-composition-id="s02" data-width="1920" data-height="1080" data-layout-allow-overflow>
+    <!-- ① private-image · 0f 왼쪽 칸 → 끝 화면 밖 왼쪽 칸 -->
+    <div id="s2-slot1" class="s2-slot">
+      <div id="s2-card1" class="asset-card" data-state="private-image">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+    <!-- ② review · 0f 가운데 칸 → 끝 왼쪽 칸 -->
+    <div id="s2-slot2" class="s2-slot">
+      <div id="s2-card2" class="asset-card" data-state="review">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+    <!-- ③ selling · 0f 오른쪽 칸 → 끝 가운데 칸 -->
+    <div id="s2-slot3" class="s2-slot">
+      <div id="s2-card3" class="asset-card" data-state="selling">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+    <!-- ④ private-file · 0f 화면 밖 오른쪽 칸 → 끝 오른쪽 칸 -->
+    <div id="s2-slot4" class="s2-slot">
+      <div id="s2-card4" class="asset-card" data-state="private-file">
+        <div class="icon icon-image" data-for="private-image"><img src="assets/buddy-front-1.png" alt=""></div>
+        <div class="icon icon-image" data-for="review"><img src="assets/buddy-front-2.png" alt=""></div>
+        <div class="icon icon-file" data-for="selling private-file"><p>파일</p></div>
+        <div class="copy" data-for="private-image"><p class="title">회의록 자동 정리 템플릿</p><p class="meta">비공개 · 나만 볼 수 있어요</p></div>
+        <div class="copy" data-for="review"><p class="title">리서치 비교표 템플릿</p><p class="meta">멤버 공개 · 판매 검수 중</p></div>
+        <div class="copy" data-for="selling"><p class="title">업무 자동화 체크리스트</p><p class="meta">멤버 공개 · 판매 중 · ₩9,900</p></div>
+        <div class="copy" data-for="private-file"><p class="title">주간 보고서 작성 도우미</p><p class="meta">비공개 · 판매 신청 전</p></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      const flick = bezier(0.2, 0.425, 0, 0.997);  // flick (docs/motion.md 1장, 카드 레일)
+      const DUR_2XL = 58 * F;                      // dur-2xl 58f (튕김 길이)
+      const STEP = 619;                            // 카드 한 칸 (scenes.md 장면에서 정한 값)
+      const CENTER = 960, SCALE_CENTER = 2.0, SCALE_SIDE = 1.4;
+      // 칸 위치(가운데 x)에 묶인 배율: 가운데 칸 ×2.0, 그 밖 칸 ×1.4. 두 칸 사이는 같은 진행값으로 선형
+      function scaleAt(cx) {
+        const d = Math.min(1, Math.abs(cx - CENTER) / STEP);
+        return SCALE_CENTER + (SCALE_SIDE - SCALE_CENTER) * d;
+      }
+      // video-shadow-ui-soft (docs/video.md 5장): 0 8px 24px 검정 12% + 0 1px 3px 검정 8%. 배율 안에서 ÷ 배율 → 화면 결과 = 토큰 값
+      function shadow(s) {
+        const r = function (n) { return (n / s).toFixed(3) + "px"; };
+        return "0 " + r(8) + " " + r(24) + " rgba(0, 0, 0, 0.12), 0 " + r(1) + " " + r(3) + " rgba(0, 0, 0, 0.08)";
+      }
+      const START_X = [341, 960, 1579, 2198];   // 0f 칸: 왼쪽 · 가운데 · 오른쪽 · 화면 밖 오른쪽
+      const slots = [1, 2, 3, 4].map(function (i) { return document.getElementById("s2-slot" + i); });
+      const rail = { p: 0 };
+      function paint() {
+        slots.forEach(function (el, i) {
+          const cx = START_X[i] - STEP * rail.p;
+          const s = scaleAt(cx);
+          el.style.transform = "translateX(" + (cx - 175).toFixed(3) + "px) scale(" + s.toFixed(5) + ")";
+          el.style.boxShadow = shadow(s);
+        });
+      }
+      paint();
+      const tl = gsap.timeline({ paused: true });
+      // 튕김 1번 0–58f: 레일 한 덩어리 (위치 · 배율 · 그림자가 진행값 하나)
+      tl.fromTo(rail, { p: 0 }, { p: 1, duration: DUR_2XL, ease: flick, onUpdate: paint }, 0);
+      window.__timelines["s02"] = tl;
+    })();
+  </script>
+</template>

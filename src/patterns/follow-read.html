@@ -1,0 +1,12 @@
+<!--
+  src/patterns/follow-read.html — 따라 읽기
+  구현 없음 — 주석만. 4단계에서는 이 파일을 가져다 쓰지 않고, 이 주석의 값 · 순서대로 장면에서 만든다 (docs/motion.md 3장).
+  출처: launch-b 1단계 승인 (snapcn 런치 영상 A-1 2.2–5.0s 구성 참고, 측정 96%)
+  쓰는 곳: 오프닝 · 엔드 글자 장면만 (4-1)
+  값
+    글자: video-hero 200px, 화면보다 긴 문장 (가장자리 잘림은 video.md 3장 범위)
+    카메라: 4-6 따라가기, 문장 진행 방향으로 dur-2xl(58f) · standard 한 번
+  순서
+    카메라가 따라가는 동안 지나가는 단어마다 강조 단어 색 바꾸기(word-highlight.html): muted → accent → text, emphasis, 간격 stagger
+    문장 기준 머무름(dur-xl) 뒤 다음 장면
+-->

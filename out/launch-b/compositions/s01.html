@@ -1,0 +1,104 @@
+<!--
+  장면 1 · 0–77f · "AI" 칸 → 앱 아이콘 (scenes.md #1 ② ③ ⑤ · 장면에서 정한 값)
+  같은 줄 감싸개(index.html #s1-line) 안에 headline.html 호스트("실무에 바로 적용하는")와 같이 놓는다 (질문 후보 18 · headline.html 호스트 주의)
+  칸: top 489 · 높이 102 (줄 높이) · 폭 = 들어 있는 것의 폭 (0–25f "AI" 76.63 / 25f부터 아이콘 84) · 안은 왼쪽 정렬 · 칸 밖은 숨김
+    칸 left = "적용하는" 오른쪽 끝 1297.41 + 단어 사이 간격 18.27 = 1315.67 (렌더 브라우저 실측, review.md 스냅보드 수정 요청 4)
+  아이콘: src/parts/brand-icon.html 마크업 · 스타일 그대로 (assets/parts/brand-icon.html 복사본, 원본 그대로), 98×98 × 0.857143 = 84×84, top 498, 그림자 없음
+  움직임 (장면 안 프레임, 이 composition 시간 = 장면 시간)
+    12–25f  "AI" 마스크 상승: yPercent 100 → 0 (= 줄 높이 102) + blur-in 4px → 0, enter (dur-m 13f · entrance)
+    25–31f  "AI" exit 위로: yPercent 0 → −100 (102px) + blur-out 0 → 4px, exit (dur-s 6f · exit)
+    25–38f  아이콘 enter 아래에서: y 102 → 0 + blur-in 4px → 0, enter (dur-m 13f · entrance). 겹침 25–31f = dur-s
+    25f     칸 폭 76.63 → 84 (보이는 것 바뀌지 않음, 칸 밖은 숨김)
+    71–77f  칸 퇴장: blur-out 0 → 4px + 투명, exit (dur-s 6f · exit) — 헤드라인 호스트 exitAt 2.366667과 같은 시점
+  줄 다시 자리 잡기(감싸개 translateX 25–38f)는 index.html 메인 타임라인
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    #root {
+      /* 토큰 (docs/design.md 1장) — brand-icon.html 그대로 */
+      --color-illustration-000000: #000000;   /* color-illustration-000000 */
+      position: absolute; inset: 0;
+    }
+    /* "AI" 칸 (같은 마스크) */
+    #s1-slot {
+      position: absolute; left: 1315.67px; top: 489px;   /* 칸 left = "적용하는" 오른쪽 끝 1297.41 + 단어 사이 간격 18.27 · top 489 */
+      width: 76.63px; height: 102px;                     /* 폭 = "AI" 76.63 (25f부터 아이콘 84, 스크립트) · 높이 = 줄 높이 102 */
+      overflow: hidden;
+    }
+    #s1-ai {
+      position: absolute; left: 0; top: 0; margin: 0; white-space: nowrap;
+      font-family: "Pretendard", sans-serif; font-weight: 600;
+      font-size: 84px;              /* video-headline */
+      line-height: 102px;           /* 행간 Text/display 34/28 */
+      letter-spacing: -0.02em;      /* video-tracking-tight */
+      color: #91a4ed;               /* video-accent */
+    }
+    /* 아이콘 이동 감싸개 (enter 아래에서): 칸 전체 크기 */
+    #s1-icon-move { position: absolute; left: 0; top: 0; width: 84px; height: 102px; }
+    /* 아이콘 배율 감싸개: 98×98 → 84×84, 칸 안 top 9 (화면 top 498) */
+    #s1-icon-scale { position: absolute; left: 0; top: 9px; width: 98px; height: 98px; transform-origin: 0 0; transform: scale(0.857143); }
+
+    /* 아래는 src/parts/brand-icon.html 스타일 그대로 (#brand-icon) */
+    #root #brand-icon {
+      box-sizing: border-box;
+      width: 98px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      border-radius: 12px;
+      background: var(--color-illustration-000000);
+    }
+    #root #brand-icon img { display: block; flex: none; width: 66px; height: 66px; }
+  </style>
+  <div id="root" data-composition-id="s01" data-width="1920" data-height="1080" data-layout-allow-overflow>
+    <div id="s1-slot">
+      <p id="s1-ai">AI</p>
+      <div id="s1-icon-move">
+        <div id="s1-icon-scale">
+          <div id="brand-icon">
+            <img src="assets/logo-symbol-white.svg" width="100" height="100" alt="Huddling Club">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      // docs/motion.md 1장 · 2장
+      const entrance = bezier(0.15, 0.85, 0.55, 0.95);   // entrance
+      const exit = bezier(0.45, 0.05, 0.85, 0.15);       // exit
+      const ENTER = 13 * F;                              // enter = dur-m 13f
+      const EXIT = 6 * F;                                // exit = dur-s 6f
+      const BLUR = "blur(4px)", SHARP = "blur(0px)";     // blur-in 4px → 0 · blur-out 0 → 4px
+      const LINE = 102;                                  // 줄 높이 (video-headline 행간 34/28)
+
+      const tl = gsap.timeline({ paused: true });
+      // ② "AI" 마스크 상승 12–25f (enter · blur-in, video-accent)
+      tl.fromTo("#s1-ai", { yPercent: 100, filter: BLUR }, { yPercent: 0, filter: SHARP, duration: ENTER, ease: entrance }, 12 * F);
+      // ③ 단어 겹쳐 바꾸기 (word-swap.html): "AI" exit 위로 25–31f
+      tl.fromTo("#s1-ai", { yPercent: 0, filter: SHARP }, { yPercent: -100, filter: BLUR, duration: EXIT, ease: exit, immediateRender: false }, 25 * F);
+      //    아이콘 enter 아래에서 25–38f (blur-in), dur-s 6f 겹침
+      tl.fromTo("#s1-icon-move", { y: LINE, filter: BLUR }, { y: 0, filter: SHARP, duration: ENTER, ease: entrance }, 25 * F);
+      //    칸 폭 = 들어 있는 것의 폭: "AI" 76.63 → 아이콘 84
+      tl.set("#s1-slot", { width: 84 }, 25 * F);
+      // ⑤ 퇴장 71–77f: 칸도 같은 exit (blur-out + 투명)
+      tl.fromTo("#s1-slot", { opacity: 1, filter: SHARP }, { opacity: 0, filter: BLUR, duration: EXIT, ease: exit, immediateRender: false }, 71 * F);
+      window.__timelines["s01"] = tl;
+    })();
+  </script>
+</template>

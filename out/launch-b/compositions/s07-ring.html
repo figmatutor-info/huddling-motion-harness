@@ -1,0 +1,42 @@
+<!--
+  장면 7 · 376–450f · 로고 빛 맞음 링 (logo-hit.html, 구현 없음 → 장면에서 만듦). 층: end-card.html 위
+  video-logo-ring (docs/video.md 5장): video-accent #91a4ed, 선 2px, 지름 아이콘 높이 → 3배 (66.21 → 198.64, width · height로, transform scale 금지),
+    불투명도 60% → 0%. 장면 안 44–62f emphasis (dur-l 18f · entrance) 한 번, 반복 없음
+  중심 = end-card.html 로고 아이콘 가운데 (662.62, 638.96), 렌더 실측 (compositions/s07.html 주석)
+-->
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #s7-ring {
+      position: absolute; left: 662.62px; top: 638.96px; width: 66.21px; height: 66.21px;
+      box-sizing: border-box; border: 2px solid #91a4ed; /* video-accent */ border-radius: 50%; opacity: 0;
+    }
+  </style>
+  <div id="root" data-composition-id="s07-ring" data-width="1920" data-height="1080">
+    <div id="s7-ring" data-layout-allow-overlap></div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      const entrance = bezier(0.15, 0.85, 0.55, 0.95);   // entrance (emphasis 곡선)
+      const EMPHASIS = 18 * F;                           // emphasis = dur-l 18f
+      const tl = gsap.timeline({ paused: true });
+      gsap.set("#s7-ring", { xPercent: -50, yPercent: -50 });
+      tl.fromTo("#s7-ring", { width: 66.21, height: 66.21, opacity: 0.6 }, { width: 198.64, height: 198.64, opacity: 0, duration: EMPHASIS, ease: entrance, immediateRender: false }, 44 * F);
+      window.__timelines["s07-ring"] = tl;
+    })();
+  </script>
+</template>

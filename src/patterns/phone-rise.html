@@ -1,0 +1,168 @@
+<!--
+  src/patterns/phone-rise.html — 시그니처: 폰 솟아오르기 + parts 내려오기
+  기법 출처: https://www.remotion.dev/prompts/apple-style-device-rise-animation (기법만 참고, 프롬프트 · 수치를 옮기지 않음)
+  쓰는 법: out/<영상이름>/compositions/patterns/phone-rise.html 로 복사하고 수정하지 않는다. 배경보다 위에 놓는다.
+    <div id="s1-rise" data-composition-id="phone-rise" data-composition-src="compositions/patterns/phone-rise.html"
+         data-start="0" data-duration="2" data-width="1920" data-height="1080"
+         data-variable-values='{"screen":"assets/screens/03-mission.png"}' style="z-index:2"></div>
+  변수
+    screen      src/screens/*.png (780×1688)
+    phoneX      폰 가운데 x(px). translateX(-50%)의 기준점
+    riseY       시작 위치: 아래로 밀린 거리(px). 기본 700 (launch-b 승인)
+    tiltFrom    시작 기울기(rotateX, 도). 기본 35 (launch-b 승인)
+    tiltTo      끝 기울기(rotateX, 도). 기본 8 (launch-b 승인)
+    shadow      폰 그림자 1 · 2 · 3. 기본 2 = video-shadow-device (docs/video.md 4장, launch-b 승인)
+    perspective 원근 거리(px). 기본 2400 (launch-b 승인)
+    parts       "card-badge"(기본: mission-card · badge가 위에서 내려옴) · "list"(폰 목록 안 제자리에서 카드가 아래 → 위로 쌓임) · "none"
+    listCards   parts:"list"일 때 카드 PNG 경로들, 쉼표로 구분. 기본 skill-card-1~3
+    listTop     첫 카드 줄 위쪽 y (화면 png 780×1688 좌표). 기본 788 (02-skills 카드 1 자리)
+    listGap     카드 줄 간격 (png 좌표). 기본 144
+  순서
+    0f → 58f   폰이 dur-2xl · entrance(감속)로 솟아오름: translateY riseY → 0, rotateX tiltFrom → tiltTo, scale 0.8 → 1 (launch-b 승인: dur-xl → dur-2xl)
+    58f        parts:"card-badge" mission-card가 위에서 enter로 내려옴 / parts:"list" 카드 1이 자기 줄 안에서 아래 → 위로 enter
+    64f · 70f  stagger 간격으로 다음 parts / 다음 카드
+    끝까지     머묾 (기울기 tiltTo는 남음)
+  장면 길이: parts 움직임이 끝난 뒤(card-badge 77f · list 83f) 머무름은 motion.md 4-2 (글자 기준)
+  기울기가 바뀌며 들어오는 것은 회전 등장이 아니다 (motion.md 5장, launch-b 승인)
+  변형 순서는 translateX(-50%) → translateY → rotateX → scale, transform-origin center bottom (고정)
+  parts 크기: 보조 parts 안 글자 36px 이상(video.md 5장) = 2x PNG의 1.5배(4-4 상한)라 정확히 1.5배
+  폰 프레임 값은 phone-frame.html과 같다 (docs/video.md 4장)
+  필요한 에셋: assets/screens/*.png, assets/parts/mission-card.png · badge-approved.png
+-->
+<template>
+  <style>
+    /* 토큰 (docs/video.md 4장 · 5장) */
+    #root {
+      --video-phone-bezel: #2f3032;  /* video-phone-bezel */
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    #pr-persp { position: absolute; inset: 0; }
+    /* 폰: left = phoneX, translateX(-50%)로 가운데 맞춤. transform은 스크립트가 순서대로 씀 */
+    #pr-phone {
+      position: absolute;
+      top: 65px;
+      width: 452.8px;
+      height: 950px;
+      padding: 12.8px;
+      border-radius: 64.1px;
+      background: var(--video-phone-bezel);
+      transform-origin: center bottom;
+    }
+    #root .phone-screen {
+      position: relative;
+      width: 427.1px;
+      height: 924.4px;
+      border-radius: 51.3px;
+      overflow: hidden;
+      background: #ffffff; /* color-bg */
+    }
+    /* 화면 png(780×1688)를 폰 화면 폭에 맞춤 */
+    #root .phone-stage {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 780px;
+      height: 1688px;
+      transform: scale(0.54763);
+      transform-origin: 0 0;
+    }
+    #root .phone-stage > img { position: absolute; left: 0; top: 0; width: 780px; height: 1688px; }
+    /* parts:"list" — 카드 줄 마스크(color-bg). 화면의 다른 실제 항목은 가리지 않음 */
+    #root .pr-row { position: absolute; left: 40px; width: 700px; height: 96px; overflow: hidden; background: #ffffff; }
+    #root .pr-row img { display: block; width: 700px; height: 96px; }
+    /* 보조 parts: video-shadow-ui로 띄움 (video.md 5장). 2x PNG × 1.5 */
+    #root .part { position: absolute; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3); }
+    #pr-card { left: 700px; top: 170px; width: 1050px; height: 759px; border-radius: 36px; } /* 700×506 × 1.5, radius-card 12 × 3 */
+    #pr-badge { left: 1394px; top: 118px; width: 324px; height: 96px; border-radius: 24px; } /* 216×64 × 1.5, radius-button 8 × 3 */
+    #root .part img { display: block; width: 100%; height: 100%; border-radius: inherit; }
+  </style>
+  <div id="root" data-composition-id="phone-rise" data-width="1920" data-height="1080"
+       data-composition-variables='[{"id":"screen","type":"string","label":"앱 화면","default":"assets/screens/03-mission.png"},{"id":"phoneX","type":"number","label":"폰 가운데 x (px)","default":560},{"id":"riseY","type":"number","label":"시작 위치: 아래로 (px)","default":700},{"id":"tiltFrom","type":"number","label":"시작 기울기 (도)","default":35},{"id":"tiltTo","type":"number","label":"끝 기울기 (도)","default":8},{"id":"shadow","type":"number","label":"그림자 (1·2·3)","default":2},{"id":"perspective","type":"number","label":"원근 거리 (px)","default":2400},{"id":"parts","type":"string","label":"parts (card-badge · list · none)","default":"card-badge"},{"id":"listCards","type":"string","label":"목록 카드 PNG (쉼표)","default":"assets/parts/skill-card-1.png,assets/parts/skill-card-2.png,assets/parts/skill-card-3.png"},{"id":"listTop","type":"number","label":"첫 카드 줄 y (png 좌표)","default":788},{"id":"listGap","type":"number","label":"카드 줄 간격 (png 좌표)","default":144}]'>
+    <div id="pr-persp" data-layout-allow-overflow>
+      <div id="pr-phone" data-layout-allow-overflow>
+        <div class="phone-screen"><div class="phone-stage" id="pr-stage"><img id="pr-screen" data-var-src="screen" src="assets/screens/03-mission.png" alt="앱 화면" /></div></div>
+      </div>
+    </div>
+    <div id="pr-card" class="part" data-layout-allow-overlap><img src="assets/parts/mission-card.png" alt="미션 카드" /></div>
+    <div id="pr-badge" class="part" data-layout-allow-overlap><img src="assets/parts/badge-approved.png" alt="승인 완료" /></div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      // docs/motion.md 1장 easing · 2장 Semantic
+      const entrance = bezier(0.15, 0.85, 0.55, 0.95);
+      const ENTER = 13 * F, STAGGER = 6 * F, DUR_2XL = 58 * F;  // enter · stagger · dur-2xl (솟아오름, launch-b 승인)
+      const SCALE_FROM = 0.8;                                    // 요청 값 0.8 → 1
+      const DROP = 60;                                           // parts가 내려오는 거리(px, 장면 값)
+      // 그림자: ① video-shadow-ui ② video-shadow-device (기본, launch-b 승인) ③ ② + 베젤 안쪽 하이라이트
+      const SHADOWS = {
+        1: "0 16px 48px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3)",
+        2: "0 60px 120px rgba(0, 0, 0, 0.4)",
+        3: "0 60px 120px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.08)"
+      };
+
+      const v = window.__hyperframes.getVariables();
+      const phone = document.getElementById("pr-phone");
+      const persp = document.getElementById("pr-persp");
+      phone.style.left = v.phoneX + "px";
+      phone.style.boxShadow = SHADOWS[v.shadow] || SHADOWS[2];
+      persp.style.perspective = v.perspective + "px";
+      persp.style.perspectiveOrigin = v.phoneX + "px 540px";
+
+      // 변형 순서 고정: translateX(-50%) → translateY → rotateX → scale (GSAP 순서에 맡기지 않고 직접 씀)
+      const rise = { p: 0 };
+      function paint() {
+        const p = rise.p;
+        const y = v.riseY * (1 - p);
+        const a = v.tiltFrom + (v.tiltTo - v.tiltFrom) * p;
+        const s = SCALE_FROM + (1 - SCALE_FROM) * p;
+        phone.style.transform = "translateX(-50%) translateY(" + y + "px) rotateX(" + a + "deg) scale(" + s + ")";
+      }
+      paint();
+
+      const tl = gsap.timeline({ paused: true });
+      // 폰 솟아오름: dur-2xl, entrance(감속). 위치 · 기울기 · 크기를 한 곡선으로
+      tl.fromTo(rise, { p: 0 }, { p: 1, duration: DUR_2XL, ease: entrance, onUpdate: paint }, 0);
+      const mode = v.parts || "card-badge";
+      if (mode !== "card-badge") {
+        document.getElementById("pr-card").style.display = "none";
+        document.getElementById("pr-badge").style.display = "none";
+      }
+      if (mode === "card-badge") {
+        // 폰이 자리 잡은 뒤 parts가 위에서 차례로 enter, 간격 stagger
+        tl.fromTo("#pr-card", { y: -DROP, opacity: 0 }, { y: 0, opacity: 1, duration: ENTER, ease: entrance }, DUR_2XL);
+        tl.fromTo("#pr-badge", { y: -DROP, opacity: 0 }, { y: 0, opacity: 1, duration: ENTER, ease: entrance }, DUR_2XL + STAGGER);
+      } else if (mode === "list") {
+        // 카드 줄마다 color-bg 마스크, 폰이 자리 잡은 뒤 카드가 자기 줄 안에서 아래 → 위로 enter, 간격 stagger
+        const stage = document.getElementById("pr-stage");
+        String(v.listCards).split(",").filter(Boolean).forEach(function (src, i) {
+          const row = document.createElement("div");
+          row.className = "pr-row";
+          row.style.top = (v.listTop + i * v.listGap) + "px";
+          const img = document.createElement("img");
+          img.src = src.trim();
+          img.alt = "";
+          row.appendChild(img);
+          stage.appendChild(row);
+          tl.fromTo(img, { yPercent: 100 }, { yPercent: 0, duration: ENTER, ease: entrance }, DUR_2XL + i * STAGGER);
+        });
+      }
+      window.__timelines["phone-rise"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,236 @@
+<!doctype html>
+<!--
+  launch-b 생성 (장면표: out/launch-b/_plan/scenes.md · 450f · 30fps · 1920×1080)
+  스냅보드(_plan/snapboard/) 프로젝트를 옮겨 움직임 · 전환 · 카메라를 붙임.
+  Pattern 호스트(headline · bg · phone-rise · end-card)는 src/patterns 원본 그대로 복사한 compositions/patterns/* 를 쓴다.
+  "구현 없음" Pattern은 장면에서 만든다:
+    word-swap → compositions/s01.html + #s1-line 줄 자리 잡기 (아래 메인 타임라인)
+    card-stack B → compositions/s02.html · button-press · press-ring → s04.html · badge-pulse → s05.html · count-up → s06.html
+    end-shift · logo-hit(빛 번짐) → s07.html · logo-hit(링) → s07-ring.html · light-streak → streak.html
+    drift · 밀고 들어가기(#4) · converge(#4 → #5 · #6 → #7) → 아래 메인 타임라인 (카메라 · 전환 감싸개)
+  감싸개 순서: 점 수렴(화면 좌표의 수렴점) > 상시 드리프트 > 밀고 들어가기 > 장면 내용. 배경은 점 수렴에 넣지 않으므로 같은 카메라 값을 따로 받는다.
+  장면 시간 (30fps, 초 = 프레임/30):
+    s1 0–77f    0 – 2.566667          s5 251–310f 8.366667 – 10.333333
+    s2 77–135f  2.566667 – 4.5        s6 310–376f 10.333333 – 12.533333
+    s3 135–193f 4.5 – 6.433333        s7 376–450f 12.533333 – 15
+    s4 193–251f 6.433333 – 8.366667
+  전환: 빛 줄기 71–84f (컷 77f) · 컷 135f · 컷 193f · 점 수렴 238–251f (컷 251f) · 빛 줄기 304–317f (컷 310f) · 점 수렴 363–376f (컷 376f)
+-->
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* 폰트 (docs/design.md 3장 A: 로컬 파일) */
+      @font-face { font-family: "Pretendard"; font-weight: 400; src: url("assets/fonts/Pretendard-Regular.otf") format("opentype"); }
+      @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #18191b; /* video-bg */ }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
+      /* 감싸개 (headline.html 호스트 주의 · 카메라 · 전환): 화면 전체 */
+      .wrap { position: absolute; inset: 0; }
+      .wrap-left { transform: translateX(-500px); }   /* #3 · #4 헤드라인: 줄 가운데 x 460 (scenes.md 장면에서 정한 값) */
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="15" data-width="1920" data-height="1080">
+
+      <!-- ===== 장면 1 · 0–77f · 글자 (오프닝) · 어두운 · video-light-pos ① · 카메라 드리프트만 ===== -->
+      <div id="s1-cam" class="wrap" style="z-index:1">
+        <div id="s1-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+             data-start="0" data-duration="2.566667" data-width="1920" data-height="1080" data-track-kind="graphics"
+             data-variable-values='{"lightX":0,"lightY":40,"seconds":2.566667,"tone":"dark"}' style="z-index:0"></div>
+        <!-- 줄 감싸개: 헤드라인 호스트 + "AI" 칸(아이콘) 한 줄. translateX −47.45 → −51.13 (25–38f enter, 메인 타임라인) -->
+        <div id="s1-line" class="wrap" style="z-index:2">
+          <div id="s1-headline" data-composition-id="headline" data-composition-src="compositions/patterns/headline.html"
+               data-start="0" data-duration="2.566667" data-width="1920" data-height="1080" data-track-kind="graphics"
+               data-variable-values='{"text":"실무에 바로 적용하는","top":489,"start":0,"firstVisible":true,"accent":"","size":"headline","tone":"dark","exit":"fade","exitAt":2.366667}'></div>
+          <div id="s01" data-composition-id="s01" data-composition-src="compositions/s01.html"
+               data-start="0" data-duration="2.566667" data-width="1920" data-height="1080" data-track-kind="graphics"></div>
+        </div>
+      </div>
+
+      <!-- ===== 장면 2 · 77–135f · 제품 · 밝은 · ② · 드리프트만 ===== -->
+      <div id="s2-cam" class="wrap" style="z-index:1">
+        <div id="s2-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+             data-start="2.566667" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"
+             data-variable-values='{"lightX":6,"lightY":55,"seconds":1.933333,"tone":"light"}' style="z-index:0"></div>
+        <div class="wrap" style="z-index:1">
+          <div id="s02" data-composition-id="s02" data-composition-src="compositions/s02.html"
+               data-start="2.566667" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"></div>
+        </div>
+        <div class="wrap" style="z-index:2">
+          <div id="s2-headline" data-composition-id="headline" data-composition-src="compositions/patterns/headline.html"
+               data-start="2.566667" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"
+               data-variable-values='{"text":"바로 써먹는 스킬","top":391,"start":0,"tone":"light","size":"headline"}'></div>
+        </div>
+      </div>
+
+      <!-- ===== 장면 3 · 135–193f · 폰 화면 (1/2) · 밝은 · ③ · 드리프트만 ===== -->
+      <div id="s3-cam" class="wrap" style="z-index:1">
+        <div id="s3-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+             data-start="4.5" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"
+             data-variable-values='{"lightX":2,"lightY":30,"seconds":1.933333,"tone":"light"}' style="z-index:0"></div>
+        <div class="wrap" style="z-index:1">
+          <div id="s3-rise" data-composition-id="phone-rise" data-composition-src="compositions/patterns/phone-rise.html"
+               data-start="4.5" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"
+               data-variable-values='{"screen":"assets/screens/03-mission.png","phoneX":1340,"parts":"none"}'></div>
+        </div>
+        <div class="wrap wrap-left" style="z-index:2">
+          <div id="s3-headline" data-composition-id="headline" data-composition-src="compositions/patterns/headline.html"
+               data-start="4.5" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"
+               data-variable-values='{"text":"이번 달 미션","top":489,"start":0,"tone":"light"}'></div>
+        </div>
+      </div>
+
+      <!-- ===== 장면 4 · 193–251f · 제품 · 어두운 · ④ · 드리프트 + 밀고 들어가기 · 점 수렴 → #5 ===== -->
+      <div id="s4-cam-bg" class="wrap" style="z-index:1">
+        <div id="s4-push-bg" class="wrap">
+          <div id="s4-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+               data-start="6.433333" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"
+               data-variable-values='{"lightX":8,"lightY":50,"seconds":1.933333,"tone":"dark"}' style="z-index:0"></div>
+        </div>
+      </div>
+      <div id="s4-conv" class="wrap" style="z-index:2">
+        <div id="s4-cam" class="wrap">
+          <div id="s4-push" class="wrap">
+            <div class="wrap" style="z-index:1">
+              <div id="s04" data-composition-id="s04" data-composition-src="compositions/s04.html"
+                   data-start="6.433333" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"></div>
+            </div>
+            <div class="wrap wrap-left" style="z-index:2">
+              <div id="s4-headline" data-composition-id="headline" data-composition-src="compositions/patterns/headline.html"
+                   data-start="6.433333" data-duration="1.933333" data-width="1920" data-height="1080" data-track-kind="graphics"
+                   data-variable-values='{"text":"결과물 제출","top":489,"start":0}'></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 장면 5 · 251–310f · 강조 · 어두운 · ⑤ · 드리프트만 ===== -->
+      <div id="s5-cam" class="wrap" style="z-index:1">
+        <div id="s5-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+             data-start="8.366667" data-duration="1.966667" data-width="1920" data-height="1080" data-track-kind="graphics"
+             data-variable-values='{"lightX":4,"lightY":65,"seconds":1.966667,"tone":"dark"}' style="z-index:0"></div>
+        <div class="wrap" style="z-index:1">
+          <div id="s05" data-composition-id="s05" data-composition-src="compositions/s05.html"
+               data-start="8.366667" data-duration="1.966667" data-width="1920" data-height="1080" data-track-kind="graphics"></div>
+        </div>
+        <div class="wrap" style="z-index:2">
+          <div id="s5-headline" data-composition-id="headline" data-composition-src="compositions/patterns/headline.html"
+               data-start="8.366667" data-duration="1.966667" data-width="1920" data-height="1080" data-track-kind="graphics"
+               data-variable-values='{"text":"도전부터 미션 완료까지","top":421,"start":0,"exitAt":1.766667}'></div>
+        </div>
+      </div>
+
+      <!-- ===== 장면 6 · 310–376f · 글자 (숫자, 중간 — 4-1 예외) · 밝은 · ⑥ · 드리프트만 · 점 수렴 → #7 ===== -->
+      <div id="s6-cam-bg" class="wrap" style="z-index:1">
+        <div id="s6-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+             data-start="10.333333" data-duration="2.2" data-width="1920" data-height="1080" data-track-kind="graphics"
+             data-variable-values='{"lightX":0,"lightY":45,"seconds":2.2,"tone":"light"}' style="z-index:0"></div>
+      </div>
+      <div id="s6-conv" class="wrap" style="z-index:2">
+        <div id="s6-cam" class="wrap">
+          <div class="wrap" style="z-index:1">
+            <div id="s06" data-composition-id="s06" data-composition-src="compositions/s06.html"
+                 data-start="10.333333" data-duration="2.2" data-width="1920" data-height="1080" data-track-kind="graphics"></div>
+          </div>
+          <div class="wrap" style="z-index:2">
+            <div id="s6-headline" data-composition-id="headline" data-composition-src="compositions/patterns/headline.html"
+                 data-start="10.333333" data-duration="2.2" data-width="1920" data-height="1080" data-track-kind="graphics"
+                 data-variable-values='{"text":"이번 달 수익","top":356,"start":0,"tone":"light","size":"headline"}'></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 장면 7 · 376–450f · 글자 (엔드 카드) · 어두운 ① → video-end-gradient · 드리프트만 ===== -->
+      <div id="s7-cam" class="wrap" style="z-index:1">
+        <div id="s7-bg" data-composition-id="bg" data-composition-src="compositions/patterns/bg.html"
+             data-start="12.533333" data-duration="2.466667" data-width="1920" data-height="1080" data-track-kind="graphics"
+             data-variable-values='{"lightX":0,"lightY":40,"seconds":2.466667,"tone":"dark"}' style="z-index:0"></div>
+        <div class="wrap" style="z-index:1">
+          <div id="s07" data-composition-id="s07" data-composition-src="compositions/s07.html"
+               data-start="12.533333" data-duration="2.466667" data-width="1920" data-height="1080" data-track-kind="graphics"></div>
+        </div>
+        <div class="wrap" style="z-index:2">
+          <div id="s7-end" data-composition-id="end-card" data-composition-src="compositions/patterns/end-card.html"
+               data-start="12.533333" data-duration="2.466667" data-width="1920" data-height="1080" data-track-kind="graphics"
+               data-variable-values='{"slogan":"배움이 쌓여, 나의 자산으로","exitAt":0}'></div>
+        </div>
+        <div class="wrap" style="z-index:3">
+          <div id="s7-ring-host" data-composition-id="s07-ring" data-composition-src="compositions/s07-ring.html"
+               data-start="12.533333" data-duration="2.466667" data-width="1920" data-height="1080" data-track-kind="graphics"></div>
+        </div>
+      </div>
+
+      <!-- ===== 빛 줄기 전환 (video-streak, screen 합성): 1 → 2 71–84f · 5 → 6 304–317f ===== -->
+      <div id="s12-streak" data-composition-id="streak" data-composition-src="compositions/streak.html"
+           data-start="2.366667" data-duration="0.433333" data-width="1920" data-height="1080" data-track-kind="graphics"
+           style="z-index:10; mix-blend-mode:screen"></div>
+      <div id="s56-streak" data-composition-id="streak" data-composition-src="compositions/streak.html"
+           data-start="10.133333" data-duration="0.433333" data-width="1920" data-height="1080" data-track-kind="graphics"
+           style="z-index:10; mix-blend-mode:screen"></div>
+    </div>
+    <script>
+      (function () {
+        const F = 1 / 30;
+        function bezier(x1, y1, x2, y2) {
+          return function (t) {
+            if (t <= 0) return 0;
+            if (t >= 1) return 1;
+            let lo = 0, hi = 1, s = t;
+            for (let i = 0; i < 30; i++) {
+              s = (lo + hi) / 2;
+              const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+              if (x < t) lo = s; else hi = s;
+            }
+            return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+          };
+        }
+        // docs/motion.md 1장 · 2장
+        const entrance = bezier(0.15, 0.85, 0.55, 0.95);   // entrance (enter 곡선)
+        const standard = bezier(0.55, 0, 0.1, 0.95);       // standard (transition · 밀고 들어가기 곡선)
+        const ENTER = 13 * F;                              // enter = dur-m 13f
+        const TRANSITION = 13 * F;                         // transition = dur-m 13f
+        const DRIFT_TO = 1.04;                             // 상시 드리프트 1 → 1.04 (drift.html), easing 없음 (none)
+        const PUSH_TO = 1.16;                              // 밀고 들어가기 1 → 1.16, standard (4-6)
+
+        // 장면 [시작f, 길이f]
+        const S = { 1: [0, 77], 2: [77, 58], 3: [135, 58], 4: [193, 58], 5: [251, 59], 6: [310, 66], 7: [376, 74] };
+
+        // document.fonts.ready 뒤에 타임라인을 만들고 마지막에 등록 (docs/design.md 3장 · HyperFrames runtimes)
+        document.fonts.ready.then(function () {
+          const tl = gsap.timeline({ paused: true });
+
+          // 상시 드리프트 (drift.html): 모든 장면, 장면 내내 1 → 1.04, none, 중심 960 540. 배경 · 내용 감싸개에 같은 값
+          const cams = { 1: ["#s1-cam"], 2: ["#s2-cam"], 3: ["#s3-cam"], 4: ["#s4-cam-bg", "#s4-cam"], 5: ["#s5-cam"], 6: ["#s6-cam-bg", "#s6-cam"], 7: ["#s7-cam"] };
+          Object.keys(S).forEach(function (k) {
+            const st = S[k][0] * F, dur = S[k][1] * F;
+            gsap.set(cams[k], { transformOrigin: "960px 540px" });
+            tl.fromTo(cams[k], { scale: 1 }, { scale: DRIFT_TO, duration: dur, ease: "none", immediateRender: false }, st);
+          });
+
+          // #1 줄 다시 자리 잡기 (word-swap.html): 감싸개 translateX −(18.27 + "AI" 76.63) ÷ 2 = −47.45 → −(18.27 + 84) ÷ 2 = −51.13, enter 25–38f
+          tl.set("#s1-line", { x: -47.45 }, 0);
+          tl.fromTo("#s1-line", { x: -47.45 }, { x: -51.13, duration: ENTER, ease: entrance, immediateRender: false }, 25 * F);
+
+          // #4 밀고 들어가기 (button-press.html · 4-6): 장면 내내 0–58f, 1 → 1.16, standard, 중심 = 버튼 가운데 (1340, 540). 드리프트 안쪽 감싸개
+          gsap.set(["#s4-push-bg", "#s4-push"], { transformOrigin: "1340px 540px" });
+          tl.fromTo(["#s4-push-bg", "#s4-push"], { scale: 1 }, { scale: PUSH_TO, duration: S[4][1] * F, ease: standard, immediateRender: false }, S[4][0] * F);
+
+          // #4 → #5 점 수렴 (converge.html): 장면 안 45–58f = 238–251f, 헤드라인 + 버튼 묶음 배율 1 → 0, transition, 흐림 없음, 수렴점 (960, 611) = #5 배지 가운데
+          gsap.set("#s4-conv", { transformOrigin: "960px 611px" });
+          tl.fromTo("#s4-conv", { scale: 1 }, { scale: 0, duration: TRANSITION, ease: standard, immediateRender: false }, 238 * F);
+
+          // #6 → #7 점 수렴: 장면 안 53–66f = 363–376f, 라벨 + 숫자 줄 묶음 배율 1 → 0, transition, 흐림 없음, 수렴점 (960, 454) = 엔드 카드 슬로건 줄 가운데
+          gsap.set("#s6-conv", { transformOrigin: "960px 454px" });
+          tl.fromTo("#s6-conv", { scale: 1 }, { scale: 0, duration: TRANSITION, ease: standard, immediateRender: false }, 363 * F);
+
+          tl.set({}, {}, 15);   // 타임라인 길이 = 450f
+          window.__timelines["main"] = tl;
+        });
+      })();
+    </script>
+  </body>
+</html>

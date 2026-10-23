@@ -1,0 +1,18 @@
+<!--
+  장면 7 · 376–450f · 엔드 바탕 (정지: 대표 프레임 = 엔드 바탕 바꾸기 끝, 장면 안 70f)
+  video-end-gradient (docs/video.md 2장): 아래 color-primary #3759de → 위 video-bg #18191b
+  층: bg.html 위 · end-card.html 아래
+  생성 단계: end-shift.html (transition 13f, 장면 안 50–63f 아래부터 차오름) · logo-hit.html (44–62f)
+-->
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #s7-end-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, #3759de, #18191b); /* video-end-gradient: color-primary → video-bg */
+    }
+  </style>
+  <div id="root" data-composition-id="s07" data-width="1920" data-height="1080" data-no-timeline>
+    <div id="s7-end-gradient"></div>
+  </div>
+</template>

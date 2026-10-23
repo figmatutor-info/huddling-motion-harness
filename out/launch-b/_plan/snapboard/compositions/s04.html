@@ -1,0 +1,36 @@
+<!--
+  장면 4 · 193–251f · 제출하기 버튼 (정지: 대표 프레임 = 버튼 등장 끝 · 눌림 끝, 장면 안 40f)
+  부품: src/parts/button-submit.html (data-state="submit" "제출하기") 마크업 · 스타일 그대로, × 2.4 = 840 × 105.6
+  위치: 가운데 (1340, 540) → left 920 · top 487.2 (scenes.md 장면에서 정한 값)
+  생성 단계: 버튼 enter(아래 16px) · button-press(emphasis 1 → 0.96 → 1) · press-ring(video-logo-ring) · 밀고 들어가기(standard 1 → 1.16)
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    #root {
+      --color-primary: #3759de;     /* color-primary */
+      --color-on-primary: #ffffff;  /* color-on-primary */
+      position: absolute; inset: 0;
+    }
+    /* 배율 감싸개: 부품 350×44 × 2.4 */
+    #s4-button-scale { position: absolute; left: 920px; top: 487.2px; width: 350px; height: 44px; transform: scale(2.4); transform-origin: 0 0; }
+    /* 아래는 src/parts/button-submit.html 스타일 그대로 */
+    #button-submit {
+      box-sizing: border-box; width: 350px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      overflow: hidden; border-radius: 8px; background: var(--color-primary);
+    }
+    #button-submit .label {
+      flex: 1 0 0; min-width: 1px; margin: 0; font-family: "Pretendard", sans-serif; font-weight: 600;
+      font-size: 14px; line-height: 20px; color: var(--color-on-primary); text-align: center;
+    }
+    #button-submit .label > span { display: none; }
+    #button-submit[data-state="submit"] [data-for="submit"] { display: inline; }
+  </style>
+  <div id="root" data-composition-id="s04" data-width="1920" data-height="1080" data-no-timeline>
+    <div id="s4-button-scale">
+      <div id="button-submit" data-state="submit">
+        <p class="label"><span data-for="submit">제출하기</span></p>
+      </div>
+    </div>
+  </div>
+</template>

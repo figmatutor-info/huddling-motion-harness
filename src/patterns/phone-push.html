@@ -1,0 +1,185 @@
+<!--
+  src/patterns/phone-push.html — 시그니처: 폰 밀고 들어가기 (snapcn Checkout Push 공개 설명의 구성만 참고, 코드 · 수치 가져오지 않음)
+  쓰는 법: out/<영상이름>/compositions/patterns/phone-push.html 로 복사하고 수정하지 않는다. 배경보다 위에 놓는다.
+    <div id="s1-push" data-composition-id="phone-push" data-composition-src="compositions/patterns/phone-push.html"
+         data-start="0" data-duration="2" data-width="1920" data-height="1080"
+         data-variable-values='{"screen":"assets/screens/05-assets.png","before":"29,709","seconds":2}' style="z-index:2"></div>
+  변수
+    screen     src/screens/*.png (780×1688). 기본 05-assets — stat-card 자리(png x 40 · y 337)에 src/parts/stat-card.html을 2배로 얹는다
+    before     바뀌기 전 금액. 마지막 자리만 다르게 (after는 stat-card의 data-final 29,700)
+    seconds    장면 길이(초). dolly · 기울기는 장면 끝까지
+    tiltDeg    마지막 기울기(rotateX, 도). 후보 값 — _plan/review.md
+    perspective  원근 거리(px). 후보 값 — _plan/review.md
+  순서
+    0f        폰 정지, before 금액
+    6f        stagger 뒤 마지막 자리가 한 프레임에 after로 (키패드 누르듯, textContent만)
+    6f → 끝   카메라 dolly 배율 1 → 1.35, 끝까지 가속 (곡선 후보 — 기본 exit 곡선)
+    18f → 끝  dur-l부터 폰이 rotateX만으로 뒤로 눕는다 (위쪽이 멀어짐, yaw · roll 없음). 같은 곡선
+  폰 프레임 값은 phone-frame.html과 같다 (docs/video.md 4장)
+  필요한 에셋: assets/screens/05-assets.png, assets/fonts/Pretendard-SemiBold.otf · Pretendard-Bold.otf
+-->
+<template>
+  <style>
+    @font-face { font-family: "Pretendard"; font-weight: 600; src: url("assets/fonts/Pretendard-SemiBold.otf") format("opentype"); }
+    @font-face { font-family: "Pretendard"; font-weight: 700; src: url("assets/fonts/Pretendard-Bold.otf") format("opentype"); }
+    /* 토큰 (docs/video.md 4장 · 5장) */
+    #root {
+      --video-phone-bezel: #2f3032;  /* video-phone-bezel */
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    /* 카메라: dolly 배율. 폰 가운데(960, 540)로 다가감 */
+    #pp-cam { position: absolute; inset: 0; transform-origin: 960px 540px; }
+    /* 원근: rotateX가 깊이를 갖도록 부모에만 둔다 (움직이지 않음) */
+    #pp-persp { position: absolute; inset: 0; perspective-origin: 960px 540px; }
+    #pp-phone {
+      position: absolute;
+      left: 733.6px;
+      top: 65px;
+      width: 452.8px;
+      height: 950px;
+      padding: 12.8px;
+      border-radius: 64.1px;
+      background: var(--video-phone-bezel);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3); /* video-shadow-ui */
+      transform-origin: 50% 50%;
+    }
+    #root .phone-screen {
+      position: relative;
+      width: 427.1px;
+      height: 924.4px;
+      border-radius: 51.3px;
+      overflow: hidden;
+      background: #ffffff; /* color-bg */
+    }
+    /* 화면 png(780×1688)를 폰 화면 폭에 맞춤 */
+    #root .phone-stage {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 780px;
+      height: 1688px;
+      transform: scale(0.54763);
+      transform-origin: 0 0;
+    }
+    #root .phone-stage img { position: absolute; left: 0; top: 0; width: 780px; height: 1688px; }
+    /* stat-card를 png의 같은 자리에 2배로 (png는 2x 내보내기) */
+    #pp-card { position: absolute; left: 40px; top: 337px; width: 350px; transform: scale(2); transform-origin: 0 0; }
+  </style>
+  <div id="root" data-composition-id="phone-push" data-width="1920" data-height="1080"
+       data-composition-variables='[{"id":"screen","type":"string","label":"앱 화면","default":"assets/screens/05-assets.png"},{"id":"before","type":"string","label":"바뀌기 전 금액","default":"29,709"},{"id":"seconds","type":"number","label":"장면 길이 (초)","default":2},{"id":"tiltDeg","type":"number","label":"마지막 기울기 (도, 후보)","default":24},{"id":"perspective","type":"number","label":"원근 거리 (px, 후보)","default":2400}]'>
+    <div id="pp-cam" data-layout-allow-overflow>
+      <div id="pp-persp" data-layout-allow-overflow>
+        <div id="pp-phone" data-layout-allow-overflow>
+          <div class="phone-screen"><div class="phone-stage"><img id="pp-screen" data-var-src="screen" src="assets/screens/05-assets.png" alt="앱 화면" />
+            <div id="pp-card"><style>
+  .stat-card {
+    --color-bg: #ffffff;
+    --color-border: #e9eaed;
+    --color-text: #18191b;
+
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* 아래 4개: design.md 4장 컴포넌트 내부 치수 */
+    width: 350px;
+    gap: 12px; /* 피그마: space-small */
+    padding-top: 20px; /* 피그마: space-page */
+    border-top: 1px solid var(--color-border);
+
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: "Pretendard", sans-serif;
+    white-space: pre-wrap;
+    overflow: clip;
+  }
+  .stat-card p {
+    margin: 0;
+    width: 100%;
+  }
+  /* Text/section */
+  .stat-card__title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 28px;
+    letter-spacing: 0;
+  }
+  /* Text/label */
+  .stat-card__meta {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    letter-spacing: 0;
+  }
+  /* 영상 렌더 설정(피그마 값 아님): 카운트업 중 숫자 폭 고정.
+     최종 프레임에서도 유지한다 — 피그마보다 끝자리가 최대 약 4px 오른쪽인 건 감수하기로 함 */
+  #stat-card-amount {
+    font-variant-numeric: tabular-nums;
+    display: inline-block;
+    text-align: left; /* 피그마 카드와 같은 왼쪽 정렬 */
+  }
+  /* min-width = 최종값(data-final) 폭: 안 보이는 최종값을 높이 0으로 깔아 폭만 확보.
+     ::before라서 textContent를 바꿔도 남고, 기준선은 실제 숫자 줄을 따른다 */
+  #stat-card-amount::before {
+    content: attr(data-final);
+    display: block;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+  }
+</style>
+
+<div class="stat-card" data-node-id="195:636">
+  <p class="stat-card__title">이번 달 수익  ₩<span id="stat-card-amount" class="stat-card__amount" data-value="29700" data-final="29,700">29,700</span></p>
+  <p class="stat-card__meta">전체 4개     /     검수 중 1개     /     판매 중 1개</p>
+</div>
+</div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const F = 1 / 30;
+      function bezier(x1, y1, x2, y2) {
+        return function (t) {
+          if (t <= 0) return 0;
+          if (t >= 1) return 1;
+          let lo = 0, hi = 1, s = t;
+          for (let i = 0; i < 30; i++) {
+            s = (lo + hi) / 2;
+            const x = 3 * (1 - s) * (1 - s) * s * x1 + 3 * (1 - s) * s * s * x2 + s * s * s;
+            if (x < t) lo = s; else hi = s;
+          }
+          return 3 * (1 - s) * (1 - s) * s * y1 + 3 * (1 - s) * s * s * y2 + s * s * s;
+        };
+      }
+      // 가속 곡선 후보 ① exit 곡선 재사용 (docs/motion.md 1장). 끝까지 속도가 줄지 않는다 — _plan/review.md
+      const accel = bezier(0.45, 0.05, 0.85, 0.15);
+      const STAGGER = 6 * F, DUR_L = 18 * F;   // stagger (dur-s) · dur-l
+      const DOLLY_SCALE = 1.35;                 // dolly 배율 (요청 값)
+
+      const v = window.__hyperframes.getVariables();
+      document.getElementById("pp-persp").style.perspective = v.perspective + "px";
+      const amount = document.getElementById("stat-card-amount");
+      const after = amount.getAttribute("data-final");
+      const SECONDS = v.seconds;
+      const FLIP = STAGGER;
+
+      const tl = gsap.timeline({ paused: true });
+      // 마지막 자리: FLIP 프레임에 한 번에 바뀜 (중간값 없음). 시계 하나로 매 프레임 같은 결과
+      const clock = { t: 0 };
+      function paint() { amount.textContent = clock.t >= FLIP - 1e-6 ? after : v.before; }
+      paint();
+      tl.fromTo(clock, { t: 0 }, { t: SECONDS, duration: SECONDS, ease: "none", onUpdate: paint }, 0);
+      // dolly: 바뀐 직후부터 장면 끝까지 1 → 1.35, 끝까지 가속
+      tl.fromTo("#pp-cam", { scale: 1 }, { scale: DOLLY_SCALE, duration: SECONDS - FLIP, ease: accel }, FLIP);
+      // 기울기: dur-l부터 장면 끝까지 rotateX만 0 → tiltDeg (yaw · roll 없음)
+      tl.fromTo("#pp-phone", { rotationX: 0 }, { rotationX: v.tiltDeg, duration: SECONDS - DUR_L, ease: accel }, DUR_L);
+      window.__timelines["phone-push"] = tl;
+    })();
+  </script>
+</template>
