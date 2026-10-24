@@ -1,3 +1,5 @@
 .DS_Store
 .hyperframes/
 node_modules/
+references/**/*.mp4
+references/**/frames/
